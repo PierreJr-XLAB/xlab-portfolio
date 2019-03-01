@@ -1,6 +1,7 @@
 import States from 'core/States';
 import projectList from 'config/project-list';
 import experimentList from 'config/experiment-list';
+import teamList from 'config/team-list';
 import * as pages from 'core/pages';
 import { createDOM } from 'utils/dom';
 import { createCanvas, resizeCanvas } from 'utils/canvas';
@@ -330,7 +331,7 @@ export default class DesktopListView {
   }
 
   updateState(page) {
-    if (page === pages.HOME || page === pages.EXPERIMENT) {
+    if (page === pages.HOME || page === pages.EXPERIMENT || page === pages.TEAM || page === pages.TOYS) {
       this._fillContent(page);
     } else if (page === pages.PROJECT) {
       this._fillContent(pages.HOME);
@@ -395,7 +396,8 @@ export default class DesktopListView {
 
         this._type = pages.HOME;
       }
-    } else if (page === pages.EXPERIMENT) {
+    } 
+    else if (page === pages.EXPERIMENT) {
       for (let i = 0; i < experimentList.experiments.length; i++) {
         const experiment = experimentList.experiments[i];
 
@@ -443,6 +445,54 @@ export default class DesktopListView {
 
       this._type = pages.EXPERIMENT;
     }
+    else if (page === pages.TEAM) {
+      for (let i = 0; i < teamList.team.length; i++) {
+        const team = teamList.team[i];
+
+        const item = document.createElement('div');
+        item.classList.add('js-UIHome__item');
+        item.classList.add('UIHome__item');
+        item.setAttribute('data-id', team.id);
+
+        const j = i + 1 < 10 ? `_0${i + 1}.` : `_${i + 1}.`;
+        const index = document.createElement('span');
+        index.classList.add('UIHome__itemIndex');
+        index.setAttribute('data-id', team.id);
+        index.innerHTML = j;
+        // item.appendChild(index);
+
+        const title = document.createElement('div');
+        title.classList.add('UIHome__itemTitle');
+        title.setAttribute('data-id', team.id);
+        title.appendChild(index);
+        title.innerHTML += team.title;
+        item.appendChild(title);
+
+
+        this._items.push(item);
+        this._itemsAnim.push({
+          baseAlpha: 0,
+          extraAlpha: 0,
+          currentAlpha: 0,
+          currentColor: 0,
+        });
+
+        item.addEventListener('click', this._onTeamItemClick);
+
+        this._ui.itemContainer.appendChild(item);
+
+        const point = {
+          x: 0,
+          y: 0,
+          radius: 0,
+          progressRadius: 0,
+        };
+
+        this._points.push(point);
+      }
+
+      this._type = pages.TEAM;
+    }
 
     this.resize();
   }
@@ -463,6 +513,15 @@ export default class DesktopListView {
     for (let i = 0; i < experimentList.experiments.length; i++) {
       if (experimentList.experiments[i].id === event.target.getAttribute('data-id')) {
         window.open(experimentList.experiments[i].url, '_blank');
+      }
+    }
+  }
+
+  @autobind
+  _onTeamItemClick(event) {
+    for (let i = 0; i < teamList.team.length; i++) {
+      if (teamList.team[i].id === event.target.getAttribute('data-id')) {
+        window.open(teamList.team[i].url, '_blank');
       }
     }
   }
@@ -551,8 +610,8 @@ export default class DesktopListView {
 
 
     resizeCanvas(this._ctx, this._width, this._height, true, 2);
-    this._ctx.strokeStyle = 'white';
-    this._ctx.fillStyle = 'white';
+    this._ctx.strokeStyle = 'red';
+    this._ctx.fillStyle = 'red';
 
     this._el.style.width = `${this._elWidth}px`;
     this._el.style.height = `${this._elHeight}px`;

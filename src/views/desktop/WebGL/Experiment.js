@@ -87,6 +87,12 @@ export default class Experiment {
         const delay = this._page ? 0 : 2.5;
         this.show({ delay });
         break;
+      case pages.TEAM:
+        this.hide();
+        break;
+      case pages.TOYS:
+        this.hide();
+        break;
       case pages.ABOUT:
         this.hide();
         break;

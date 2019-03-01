@@ -30,7 +30,7 @@ export default class MaskDescription {
 
   _setupCanvas() {
     this._ctx = createCanvas(this._width, this._height, true, 2);
-    this._ctx.fillStyle = 'white';
+    // this._ctx.fillStyle = 'red';
 
     this._points = [];
     this._pointsNeedsUpdate = false;

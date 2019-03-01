@@ -2,6 +2,8 @@ import * as pages from 'core/pages';
 import States from 'core/States';
 import projectList from 'config/project-list';
 import experimentList from 'config/experiment-list';
+import teamList from 'config/team-list';
+import toysList from 'config/toys-list';
 import { autobind } from 'core-decorators';
 import { toggle, active } from 'core/decorators';
 import { createDOM } from 'utils/dom';
@@ -18,6 +20,8 @@ import DecorPoints from './meshes/DecorPoints';
 import backgroundBufferFragmentShader from './meshes/Background/shaders/backgroundBufferPlane.fs';
 import foregroundBufferFragmentShader from './meshes/Foreground/shaders/foregroundBufferPlane.fs';
 import template from './webgl.tpl.html';
+import Team from './Team';
+import Toy from './Toy';
 
 
 @active()
@@ -58,6 +62,8 @@ export default class WebGL {
     this._setupBackground();
     this._setupProject();
     this._setupExperiment();
+    this._setupTeam();
+    this._setupToys();
     this._setupDecorPoints();
     this._setupCloud();
     this._setupPostProcessing();
@@ -123,6 +129,24 @@ export default class WebGL {
     this._scene.add(this._experiment.getDescription());
   }
 
+  _setupTeam() {
+    this._team = new Team({
+      raycaster: this._raycaster,
+    });
+
+    this._scene.add(this._team.getPoints());
+    this._scene.add(this._team.getDescription());
+  }
+
+  _setupToys() {
+    this._toys = new Toy({
+      raycaster: this._raycaster,
+    });
+
+    this._scene.add(this._toys.getPoints());
+    this._scene.add(this._toys.getDescription());
+  }
+
   _setupDecorPoints() {
     this._decorPoints = new DecorPoints();
     this._scene.add(this._decorPoints);
@@ -174,9 +198,16 @@ export default class WebGL {
       this._experiment.deselect();
     }
 
+    if (this._team.visible()) {
+      this._team.deselect();
+    }
+
+    if (this._toys.visible()) {
+      this._toys.deselect();
+    }
+
     if (!this._animatedScrollTimeout) {
       this._postProcessing.animate(this._deltaTarget);
-
       this._shakeCamera();
     }
 
@@ -243,6 +274,12 @@ export default class WebGL {
     const experiment = experimentList.experiments[Math.abs(target / 10000) % experimentList.experiments.length];
     this._experiment.updateDescription(experiment);
 
+    const team = teamList.team[Math.abs(target / 10000) % teamList.team.length];
+    this._team.updateDescription (team);
+
+    const toys = toysList.toys[Math.abs(target / 10000) % toysList.toys.length];
+    this._toys.updateDescription (toys);
+
     if (this._project.visible()) {
       this._project.select();
       this._project.showDescription();
@@ -252,12 +289,25 @@ export default class WebGL {
       this._experiment.select();
       this._experiment.showDescription();
     }
+
+    if (this._team.visible()) {
+      this._team.select();
+      this._team.showDescription();
+    }
+
+    if (this._toys.visible()) {
+      this._toys.select();
+      this._toys.showDescription();
+    }
+
   }
 
   updateState(page) {
 
     this._project.updateState(page);
     this._experiment.updateState(page);
+    this._team.updateState(page);
+    this._toys.updateState(page);
     this._iconProject.updateState(page);
 
     if (page === pages.HOME) {
@@ -266,23 +316,44 @@ export default class WebGL {
       this._background.show();
       this._iconProject.show();
 
-      if (this._page === pages.EXPERIMENT) {
+      if (this._page === pages.EXPERIMENT || this._page === pages.TEAM || this._page === pages.TOYS) {
         this._resetTranslation();
       }
-    } else if (page === pages.ABOUT) {
+    } 
+    else if (page === pages.ABOUT) {
       this._cloud.activate();
       this._background.hide();
       this._iconProject.hide();
       this._resetTranslation();
-    } else if (page === pages.EXPERIMENT) {
+    } 
+    else if (page === pages.EXPERIMENT) {
       this._type = 'experiment';
       this._cloud.deactivate();
       this._iconProject.show();
 
-      if (this._page === pages.HOME) {
+      if (this._page === pages.HOME || this._page === pages.TEAM || this._page === pages.TOYS) {
         this._resetTranslation();
       }
-    } else {
+    } 
+    else if (page === pages.TEAM) {
+      this._type = 'team';
+      this._cloud.deactivate();
+      this._iconProject.show();
+
+      if (this._page === pages.HOME || this._page === pages.EXPERIMENT || this._page === pages.TOYS) {
+        this._resetTranslation();
+      }
+    } 
+    else if (page === pages.TOYS) {
+      this._type = 'toys';
+      this._cloud.deactivate();
+      this._iconProject.show();
+
+      if (this._page === pages.TEAM || this._page === pages.EXPERIMENT || this._page === pages.HOME) {
+        this._resetTranslation();
+      }
+    } 
+    else {
       this._type = 'experiment';
       this._cloud.deactivate();
       this._iconProject.hide();
@@ -296,14 +367,23 @@ export default class WebGL {
     this._translation = 0;
     this._delta = 0;
     this._deltaTarget = 0;
+
     const project = projectList.projects[0];
     this._project.updateDescription(project);
 
     const experiment = experimentList.experiments[0];
     this._experiment.updateDescription(experiment);
 
+    const team = teamList.team[0];
+    this._team.updateDescription(team);
+
+    const toy = toysList.toys[0];
+    this._toys.updateDescription(toy);
+
     this._project.select();
     this._experiment.select();
+    this._team.select();
+    this._toys.select();
   }
 
   // Events --------------------------------------------------------------------
@@ -314,6 +394,8 @@ export default class WebGL {
 
     this._project.mousemove(this._mouse);
     this._experiment.mousemove(this._mouse);
+    this._team.mousemove(this._mouse);
+    this._toys.mousemove(this._mouse);
     this._iconProject.mousemove(event);
   }
 
@@ -334,6 +416,8 @@ export default class WebGL {
     if (this._cloud) this._cloud.resize(this._camera);
     if (this._project) this._project.resize(this._camera);
     if (this._experiment) this._experiment.resize(this._camera);
+    if (this._team) this._team.resize(this._camera);
+    if (this._toys) this._toys.resize(this._camera);
   }
 
   @autobind
@@ -392,6 +476,8 @@ export default class WebGL {
   _onMousedown() {
     this._project.mousedown();
     this._experiment.mousedown();
+    this._team.mousedown();
+    this._toys.mousedown();
 
     this._iconProject.focus();
   }
@@ -400,6 +486,8 @@ export default class WebGL {
   _onMouseup() {
     this._project.mouseup();
     this._experiment.mouseup();
+    this._team.mouseup();
+    this._toys.mouseup();
 
     this._iconProject.blur();
   }
@@ -408,6 +496,8 @@ export default class WebGL {
   _onMouseleave() {
     this._project.mouseup();
     this._experiment.mouseup();
+    this._team.mouseup();
+    this._toys.mouseup();
   }
 
   @autobind
@@ -427,8 +517,12 @@ export default class WebGL {
 
     if (this._type === 'project') {
       this._currentIndex = Math.floor( Math.abs(this._translation / ( projectList.projects.length * 10000 ) ) * projectList.projects.length + 0.01);
-    } else {
+    } else if (this._type === 'experiment') {
       this._currentIndex = Math.floor( Math.abs(this._translation / ( experimentList.experiments.length * 10000 ) ) * experimentList.experiments.length + 0.01);
+    } else if (this._type === 'team') {
+      this._currentIndex = Math.floor( Math.abs(this._translation / ( teamList.team.length * 10000 ) ) * teamList.team.length + 0.01);
+    } else if (this._type === 'toys') {
+      this._currentIndex = Math.floor( Math.abs(this._translation / ( toysList.toys.length * 10000 ) ) * toysList.toys.length + 0.01);
     }
 
     if (i !== this._currentIndex) {
@@ -508,7 +602,19 @@ export default class WebGL {
     this._camera.rotation.x += ( this._mouse.y * 0.1 - this._camera.rotation.x ) * 0.11;
     this._camera.rotation.y += ( this._mouse.x * -0.1 - this._camera.rotation.y ) * 0.11;
 
-    const object = this._type === 'project' ? this._project.getDescription() : this._experiment.getDescription();
+    var object = this._type === 'project' ? this._project.getDescription () : this._experiment.getDescription();
+    if (this._type === 'project') {
+      object = this._project.getDescription ();
+    }
+    else if (this._type === 'experiment') {
+      object = this._experiment.getDescription ();
+    }
+    else if (this.type === 'team') {
+      object = this._team.getDescription ();
+    }
+    else if (this._type === 'toys') {
+      object = this._toys.getDescription ();
+    }
 
     this._raycaster.setFromCamera( this._mouse, this._camera );
     const intersects = this._raycaster.intersectObjects( object.children, true );
@@ -519,11 +625,15 @@ export default class WebGL {
         if (this._project.visible()) {
           this._project.focus();
         }
-
         if (this._experiment.visible()) {
           this._experiment.focus();
         }
-
+        if (this._team.visible()) {
+          this._team.focus();
+        }
+        if (this._toys.visible()) {
+          this._toys.focus();
+        }
         document.body.style.cursor = 'pointer';
         return;
       }
@@ -538,6 +648,14 @@ export default class WebGL {
     if (this._experiment.visible()) {
       this._experiment.blur();
     }
+
+    if (this._team.visible()) {
+      this._team.blur();
+    }
+
+    if (this._toys.visible()) {
+      this._toys.blur();
+    }
   }
 
   _updatePoints(time) {
@@ -551,15 +669,25 @@ export default class WebGL {
       } else if (this._translation < -10000 * projectList.projects.length) {
         this._translation = 0;
       }
-    } else if (this._translation > 0) {
+    } 
+    else if (this._type === 'experiment' && this._translation > 0) {
       this._translation = -10000 * experimentList.experiments.length;
-    } else if (this._translation < -10000 * experimentList.experiments.length) {
+    } 
+    else if (this._type === 'experiment' && this._translation < -10000 * experimentList.experiments.length) {
       this._translation = 0;
     }
-
-    // if (this._translation > 0) {
-    //   this._translation = this._type === 'project' ? -10000 * projectList.projects.length : -10000 * experimentList.experiments.length;
-    // }
+    else if (this._type === 'team' && this._translation > 0) {
+      this._translation = -10000 * teamList.team.length;
+    } 
+    else if (this._type === 'team' && this._translation < -10000 * teamList.team.length) {
+      this._translation = 0;
+    }
+    else if (this._type === 'toys' && this._translation > 0) {
+      this._translation = -10000 * toysList.toys.length;
+    } 
+    else if (this._type === 'toys' && this._translation < -10000 * toysList.toys.length) {
+      this._translation = 0;
+    }
 
     if (this._project.visible()) {
       this._project.update(time, this._delta, this._translation, this._camera);
@@ -567,6 +695,14 @@ export default class WebGL {
 
     if (this._experiment.visible()) {
       this._experiment.update(time, this._delta, this._translation, this._camera);
+    }
+
+    if (this._team.visible()) {
+      this._team.update(time, this._delta, this._translation, this._camera);
+    }
+
+    if (this._toys.visible()) {
+      this._toys.update(time, this._delta, this._translation, this._camera);
     }
   }
 

@@ -1,7 +1,7 @@
 .UIHome__menu {
   display: none;
   font-size: 2rem;
-  color: white;
+  color: black;
   position: absolute;
   left: 50%;
   transform: translate(-50%, 0);
@@ -9,7 +9,7 @@
 }
   .UIHome__menuItem {
     cursor: pointer;
-    opacity: 0.5;
+    opacity: 1;
     transition: opacity 0.2s;
     display: inline;
 
@@ -20,5 +20,6 @@
     &.is-active {
       cursor: inherit;
       opacity: 1;
+      color: red;
     }
   }

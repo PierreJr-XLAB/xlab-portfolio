@@ -1,6 +1,8 @@
 import States from 'core/States';
 import projectList from 'config/project-list';
 import experimentList from 'config/experiment-list';
+import teamList from 'config/team-list';
+import toysList from 'config/toys-list';
 import { selected } from 'core/decorators';
 import { randomFloat } from 'utils/math';
 import { getPerspectiveSize } from 'utils/3d';
@@ -52,11 +54,22 @@ export default class Points extends THREE.Object3D {
       for (let i = 0; i < projectList.projects.length; i++) {
         this._colors.push( this._canvas.getDataImage( States.resources.getImage(`${projectList.projects[i].id}-preview`).media ) );
       }
-    } else {
+    } else if (this._type === 'experiment') {
       for (let i = 0; i < experimentList.experiments.length; i++) {
         this._colors.push( this._canvas.getDataImage( States.resources.getImage(`${experimentList.experiments[i].id}-preview`).media ) );
       }
     }
+    else if (this._type === 'team') {
+      for (let i = 0; i < teamList.team.length; i++) {
+        this._colors.push( this._canvas.getDataImage( States.resources.getImage(`${teamList.team[i].id}-preview`).media ) );
+      }
+    }
+    else if (this._type === 'toys') {
+      for (let i = 0; i < toysList.toys.length; i++) {
+        this._colors.push( this._canvas.getDataImage( States.resources.getImage(`${toysList.toys[i].id}-preview`).media ) );
+      }
+    }
+    
   }
 
   _setupGeometry() {

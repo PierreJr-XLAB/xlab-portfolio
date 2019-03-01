@@ -17,6 +17,11 @@ const ressources = {
     { id: 'christmas-experiment-2016-preview', url: 'images/experiments/christmas-experiment-2016-preview.png' },
     { id: 'rasengan-preview', url: 'images/experiments/rasengan-preview.png' },
 
+    { id: 'jiinio-preview', url: 'images/team/jiinio-preview.png' },
+    { id: 'naji-preview', url: 'images/team/naji-preview.png' },
+    { id: 'oliver-preview', url: 'images/team/oliver-preview.png' },
+    { id: 'anthony-preview', url: 'images/team/anthony-preview.png' },
+
     { id: 'radial_cloud', url: 'images/radial_cloud.jpg' },
   ],
   textures: [
@@ -44,6 +49,11 @@ const ressources = {
     { id: 'tsuki8-description', url: 'textures/descriptions/tsuki8-description.png' },
     { id: 'celia-description', url: 'textures/descriptions/celia-description.png' },
     { id: 'lusine-description', url: 'textures/descriptions/lusine-description.png' },
+
+    { id: 'jiinio-description', url: 'textures/descriptions/lusine-description.png' },
+    { id: 'naji-description', url: 'textures/descriptions/lusine-description.png' },
+    { id: 'oliver-description', url: 'textures/descriptions/lusine-description.png' },
+    { id: 'anthony-description', url: 'textures/descriptions/lusine-description.png' },
 
     { id: 'displacement', url: 'textures/cloud-displacement.png' },
   ],

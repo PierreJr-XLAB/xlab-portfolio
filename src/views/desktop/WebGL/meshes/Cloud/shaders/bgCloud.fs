@@ -136,6 +136,6 @@ void main() {
   // float alpha = 1. * smoothstep( 0., .1, max(max( secondFinalColor.r, secondFinalColor.g), secondFinalColor.b ) );
 
   // gl_FragColor = displacementTexture;
-  gl_FragColor = vec4(color, alpha);
+  gl_FragColor = vec4(vec3(1.0,1.0,1.0), alpha);
   // gl_FragColor = vec4(maskTexture.r);
 }

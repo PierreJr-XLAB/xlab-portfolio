@@ -116,6 +116,20 @@ export default class DesktopAppView {
         this._projectView.hide();
         this._about.hide();
         break;
+      case pages.TEAM:
+        // document.body.style.overflow = 'hidden';
+        this._uiHome.show();
+        this._webgl.activate();
+        this._projectView.hide();
+        this._about.hide();
+        break;
+      case pages.TOYS:
+        // document.body.style.overflow = 'hidden';
+        this._uiHome.show();
+        this._webgl.activate();
+        this._projectView.hide();
+        this._about.hide();
+        break;
       case pages.PROJECT:
         document.body.style.cursor = 'inherit';
         this._uiHome.show();
@@ -148,7 +162,7 @@ export default class DesktopAppView {
 
   @autobind
   _onResize() {
-    Signals.onResize.dispatch( window.innerWidth, window.innerHeight );
+    Signals.onResize.dispatch(window.innerWidth, window.innerHeight);
   }
 
   @autobind

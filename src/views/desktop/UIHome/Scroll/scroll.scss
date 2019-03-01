@@ -5,7 +5,7 @@
   left: 50%;
   top: 90vh;
   transform: translate(-50%, 0);
-  color: white;
+  color: black;
   @include font-body();
   font-size: 2.5rem;
   animation: highlight 3s infinite;
@@ -15,7 +15,7 @@
 
 @keyframes highlight {
   0% {
-    color: rgba(255, 255, 255, 1);
+    color: rgba(0, 0, 0, 1);
   }
 
   50% {
@@ -23,6 +23,6 @@
   }
 
   100% {
-    color: rgba(255, 255, 255, 1);
+    color: rgba(0, 0, 0, 1);
   }
 }

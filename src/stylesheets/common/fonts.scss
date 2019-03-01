@@ -12,8 +12,8 @@
 $fallbackFonts: Helvetica, Arial, sans-serif;
 
 @mixin font-body() {
-    font-family: 'blender', $fallbackFonts;
-    font-weight: 600;
+    font-family: 'funkterm', $fallbackFonts;
+    font-weight: 400;
     font-size: 4.5rem;
     @include fontSmoothing();
 }

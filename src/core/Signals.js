@@ -24,5 +24,4 @@ class Signals {
 }
 
 window.Signals = new Signals();
-
 export default window.Signals;

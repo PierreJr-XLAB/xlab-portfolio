@@ -5,10 +5,11 @@
   left: 60%;
   top: 60vh;
   @include font-body();
-  color: white;
+  color: black;
   display: none;
 }
 
   .UIHome__projectDescriptionSubtitle {
     font-size: 2rem;
+    color: black;
   }

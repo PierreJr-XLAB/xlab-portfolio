@@ -2,6 +2,8 @@ import * as pages from 'core/pages';
 import States from 'core/States';
 import projectList from 'config/project-list';
 import experimentList from 'config/experiment-list';
+import teamList from 'config/team-list';
+import toysList from 'config/toys-list';
 import { createDOM, letterParser } from 'utils/dom';
 import { createCanvas, createHexagone, resizeCanvas } from 'utils/canvas';
 import { distance2, map } from 'utils/math';
@@ -45,8 +47,12 @@ export default class TimelineView {
     this._currentIndex = null;
     this._hoverIndex = null;
 
-    this._width = Math.max( 400, window.innerWidth * 0.5 );
-    this._height = Math.max( 400, window.innerWidth * 0.5 );
+    this._canSwitchOnScroll = true;
+    this._lastScrollTop = 0;
+    this._idx = 0;
+
+    this._width = Math.max(400, window.innerWidth * 0.5);
+    this._height = Math.max(400, window.innerWidth * 0.5);
     this._timelineRadius = this._width * 0.33;
     this._baseLinesRadius = this._width * 0.37;
     this._endLinesRadius = this._width * 0.4;
@@ -78,13 +84,11 @@ export default class TimelineView {
 
   _setupCanvas() {
     this._ctx = createCanvas(this._width, this._height, true, 2);
-    this._ctx.strokeStyle = 'white';
+    this._ctx.strokeStyle = 'black';
     this._el.appendChild(this._ctx.canvas);
   }
 
   _addEvents() {
-    // this._el.addEventListener('mousemove', this._onMousemove);
-    // this._el.addEventListener('click', this._onClick);
     this._el.addEventListener('click', this._onClick);
     this._ui.title.addEventListener('click', this._onTitleClick);
     Signals.onResize.add(this._onResize);
@@ -106,6 +110,16 @@ export default class TimelineView {
         this.activate();
         this.hide();
         break;
+      case pages.TEAM:
+        this._updateDatas('team');
+        this.activate();
+        this.hide();
+        break;
+      case pages.TOYS:
+        this._updateDatas('toys');
+        this.activate();
+        this.hide();
+        break;
       case pages.PROJECT:
         this.deactivate();
         this.hide({ animations: false });
@@ -122,22 +136,36 @@ export default class TimelineView {
   }
 
   _updateDatas(type) {
-    const datas = type === 'project' ? projectList.projects : experimentList.experiments;
+
+    var datas;
+    if (type === 'project') {
+      datas = projectList.projects
+    }
+    else if (type === 'experiment') {
+      datas = experimentList.experiments
+    }
+    else if (type === 'team') {
+      datas = teamList.team
+    }
+    else {
+      datas = toysList.toys
+    }
 
     this._points = [];
     this._hexagones = [];
+
     for (let i = 0; i < datas.length; i++) {
       const radius = 0;
       const point = {
-        x: Math.cos(Math.PI * 2 * ( i / datas.length ) - Math.PI * 0.5 ) * this._timelineRadius + this._width * 0.5,
-        y: Math.sin(Math.PI * 2 * ( i / datas.length ) - Math.PI * 0.5 ) * this._timelineRadius + this._width * 0.5,
+        x: Math.cos(Math.PI * 2 * (i / datas.length) - Math.PI * 0.5) * this._timelineRadius + this._width * 0.5,
+        y: Math.sin(Math.PI * 2 * (i / datas.length) - Math.PI * 0.5) * this._timelineRadius + this._width * 0.5,
         radius,
         opacity: 0,
       };
 
       const hexagone = {
-        x: Math.cos(Math.PI * 2 * ( i / datas.length ) - Math.PI * 0.5 ) * this._timelineRadius + this._width * 0.5,
-        y: Math.sin(Math.PI * 2 * ( i / datas.length ) - Math.PI * 0.5 ) * this._timelineRadius + this._width * 0.5,
+        x: Math.cos(Math.PI * 2 * (i / datas.length) - Math.PI * 0.5) * this._timelineRadius + this._width * 0.5,
+        y: Math.sin(Math.PI * 2 * (i / datas.length) - Math.PI * 0.5) * this._timelineRadius + this._width * 0.5,
         size: 0,
         sizeTarget: 0,
         globalSize: 0,
@@ -155,10 +183,10 @@ export default class TimelineView {
     this._lines = [];
     for (let i = 0; i < this._nbLines; i++) {
       const line = {
-        x1: Math.cos(Math.PI * 2 * ( i / this._nbLines ) - Math.PI * 0.5 ) * this._baseLinesRadius + this._width * 0.5,
-        y1: Math.sin(Math.PI * 2 * ( i / this._nbLines ) - Math.PI * 0.5 ) * this._baseLinesRadius + this._width * 0.5,
-        x2: Math.cos(Math.PI * 2 * ( i / this._nbLines ) - Math.PI * 0.5 ) * this._endLinesRadius + this._width * 0.5,
-        y2: Math.sin(Math.PI * 2 * ( i / this._nbLines ) - Math.PI * 0.5 ) * this._endLinesRadius + this._width * 0.5,
+        x1: Math.cos(Math.PI * 2 * (i / this._nbLines) - Math.PI * 0.5) * this._baseLinesRadius + this._width * 0.5,
+        y1: Math.sin(Math.PI * 2 * (i / this._nbLines) - Math.PI * 0.5) * this._baseLinesRadius + this._width * 0.5,
+        x2: Math.cos(Math.PI * 2 * (i / this._nbLines) - Math.PI * 0.5) * this._endLinesRadius + this._width * 0.5,
+        y2: Math.sin(Math.PI * 2 * (i / this._nbLines) - Math.PI * 0.5) * this._endLinesRadius + this._width * 0.5,
         opacity: 0,
         size: 0,
       };
@@ -426,17 +454,29 @@ export default class TimelineView {
 
       this._rotateZ = -50;
 
-      TweenLite.set( this._lines, { size: 0 });
-      TweenLite.set( this._points, { radius: 0 });
-      TweenLite.set( this._hexagones, { globalSize: 0 });
-      TweenLite.set( this._timeline, { opacity: 0 });
-      TweenLite.set( this._previewTimeline, { progress: 0 });
+      TweenLite.set(this._lines, { size: 0 });
+      TweenLite.set(this._points, { radius: 0 });
+      TweenLite.set(this._hexagones, { globalSize: 0 });
+      TweenLite.set(this._timeline, { opacity: 0 });
+      TweenLite.set(this._previewTimeline, { progress: 0 });
     }
   }
 
-  scroll() {}
+  scroll(e) {
+    if (this._idx >= this._points.length - 1) {
+      if (e.deltaY > 0) {
+        States.router.goToNextPage();
+      }
+    }
+    else if (this._idx == 0) {
+      if (e.deltaY < 0) {
+        States.router.goToPrevPage();
+      }
+    }
+    // console.log ("CURR : " + this._idx);
+  }
 
-  unscroll() {}
+  unscroll() { }
 
   // Events --------------------------------------------------------------------
 
@@ -446,28 +486,40 @@ export default class TimelineView {
   }
 
   resize(vw, vh) {
-    const datas = this._type === 'project' ? projectList.projects : experimentList.experiments;
+    var datas = this._type === 'project' ? projectList.projects : experimentList.experiments;
+    if (this._type === 'project') {
+      datas = projectList.projects;
+    }
+    else if (this._type === 'experiment') {
+      datas = experimentList.experiments;
+    }
+    else if (this._type === 'team') {
+      datas = teamList.team;
+    }
+    else {
+      datas = toysList.toys;
+    }
 
     if (this._type) {
-      this._width = Math.max( 400, vw * 0.5);
-      this._height = Math.max( 400, vw * 0.5);
+      this._width = Math.max(400, vw * 0.5);
+      this._height = Math.max(400, vw * 0.5);
       this._timelineRadius = this._width * 0.33;
       this._baseLinesRadius = this._width * 0.37;
       this._endLinesRadius = this._width * 0.4;
 
       for (let i = 0; i < datas.length; i++) {
-        this._points[i].x = Math.cos(Math.PI * 2 * ( i / datas.length ) - Math.PI * 0.5 ) * this._timelineRadius + this._width * 0.5;
-        this._points[i].y = Math.sin(Math.PI * 2 * ( i / datas.length ) - Math.PI * 0.5 ) * this._timelineRadius + this._width * 0.5;
+        this._points[i].x = Math.cos(Math.PI * 2 * (i / datas.length) - Math.PI * 0.5) * this._timelineRadius + this._width * 0.5;
+        this._points[i].y = Math.sin(Math.PI * 2 * (i / datas.length) - Math.PI * 0.5) * this._timelineRadius + this._width * 0.5;
 
-        this._hexagones[i].x = Math.cos(Math.PI * 2 * ( i / datas.length ) - Math.PI * 0.5 ) * this._timelineRadius + this._width * 0.5;
-        this._hexagones[i].y = Math.sin(Math.PI * 2 * ( i / datas.length ) - Math.PI * 0.5 ) * this._timelineRadius + this._width * 0.5;
+        this._hexagones[i].x = Math.cos(Math.PI * 2 * (i / datas.length) - Math.PI * 0.5) * this._timelineRadius + this._width * 0.5;
+        this._hexagones[i].y = Math.sin(Math.PI * 2 * (i / datas.length) - Math.PI * 0.5) * this._timelineRadius + this._width * 0.5;
       }
 
       for (let i = 0; i < this._nbLines; i++) {
-        this._lines[i].x1 = Math.cos(Math.PI * 2 * ( i / this._nbLines ) - Math.PI * 0.5 ) * this._baseLinesRadius + this._width * 0.5;
-        this._lines[i].y1 = Math.sin(Math.PI * 2 * ( i / this._nbLines ) - Math.PI * 0.5 ) * this._baseLinesRadius + this._width * 0.5;
-        this._lines[i].x2 = Math.cos(Math.PI * 2 * ( i / this._nbLines ) - Math.PI * 0.5 ) * this._endLinesRadius + this._width * 0.5;
-        this._lines[i].y2 = Math.sin(Math.PI * 2 * ( i / this._nbLines ) - Math.PI * 0.5 ) * this._endLinesRadius + this._width * 0.5;
+        this._lines[i].x1 = Math.cos(Math.PI * 2 * (i / this._nbLines) - Math.PI * 0.5) * this._baseLinesRadius + this._width * 0.5;
+        this._lines[i].y1 = Math.sin(Math.PI * 2 * (i / this._nbLines) - Math.PI * 0.5) * this._baseLinesRadius + this._width * 0.5;
+        this._lines[i].x2 = Math.cos(Math.PI * 2 * (i / this._nbLines) - Math.PI * 0.5) * this._endLinesRadius + this._width * 0.5;
+        this._lines[i].y2 = Math.sin(Math.PI * 2 * (i / this._nbLines) - Math.PI * 0.5) * this._endLinesRadius + this._width * 0.5;
       }
 
       this._timeline = {
@@ -480,7 +532,7 @@ export default class TimelineView {
 
       resizeCanvas(this._ctx, this._width, this._height, true, 2);
 
-      this._ctx.strokeStyle = 'white';
+      this._ctx.strokeStyle = 'black';
       this._needsUpdate = true;
     }
   }
@@ -493,8 +545,8 @@ export default class TimelineView {
       this._orientationNeedsUpdate = true;
     }
 
-    this._mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-    this._mouse.y = -( event.clientY / window.innerHeight ) * 2 + 1;
+    this._mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    this._mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
     if (event.target.parentNode === this._el) {
       this._relativeMouse.x = event.offsetX;
@@ -522,21 +574,20 @@ export default class TimelineView {
     //   this.hide();
     // }
 
-    if ((this._mouse.x < ( window.innerWidth * 0.5 - this._width * 0.4 ) / window.innerWidth * 2 - 1 ||
-        this._mouse.x > ( window.innerWidth * 0.5 + this._width * 0.4 ) / window.innerWidth * 2 - 1 ||
-        this._mouse.y < ( window.innerHeight * 0.5 - this._height * 0.4 ) / window.innerHeight * 2 - 1 ||
-        this._mouse.y > ( window.innerHeight * 0.5 + this._height * 0.4 ) / window.innerHeight * 2 - 1) &&
-        this._showAnimationDone
+    if ((this._mouse.x < (window.innerWidth * 0.5 - this._width * 0.4) / window.innerWidth * 2 - 1 ||
+      this._mouse.x > (window.innerWidth * 0.5 + this._width * 0.4) / window.innerWidth * 2 - 1 ||
+      this._mouse.y < (window.innerHeight * 0.5 - this._height * 0.4) / window.innerHeight * 2 - 1 ||
+      this._mouse.y > (window.innerHeight * 0.5 + this._height * 0.4) / window.innerHeight * 2 - 1) &&
+      this._showAnimationDone
     ) {
       this.hide();
     }
   }
 
   @autobind
-  _onScrollWheel() {
-    this.scroll();
+  _onScrollWheel(e) {
 
-    // console.log(this._startScroll);
+    this.scroll(e);
 
     if (this._page !== pages.PROJECT && this._page !== pages.ABOUT) {
       // console.log('show');
@@ -556,17 +607,11 @@ export default class TimelineView {
         this._updateTimelineNeedsUpdate = false;
       }, 3000);
 
-      if (this._mouse.x < ( window.innerWidth * 0.5 - this._width * 0.5 ) / window.innerWidth * 2 - 1 ||
-          this._mouse.x > ( window.innerWidth * 0.5 + this._width * 0.5 ) / window.innerWidth * 2 - 1 ||
-          this._mouse.y < ( window.innerHeight * 0.5 - this._height * 0.5 ) / window.innerHeight * 2 - 1 ||
-          this._mouse.y > ( window.innerHeight * 0.5 + this._height * 0.5 ) / window.innerHeight * 2 - 1
+      if (this._mouse.x < (window.innerWidth * 0.5 - this._width * 0.5) / window.innerWidth * 2 - 1 ||
+        this._mouse.x > (window.innerWidth * 0.5 + this._width * 0.5) / window.innerWidth * 2 - 1 ||
+        this._mouse.y < (window.innerHeight * 0.5 - this._height * 0.5) / window.innerHeight * 2 - 1 ||
+        this._mouse.y > (window.innerHeight * 0.5 + this._height * 0.5) / window.innerHeight * 2 - 1
       ) {
-        // console.log('second hide');
-        // console.log(this._mouse);
-        // console.log( (window.innerWidth * 0.5 - this._width * 0.5) / window.innerWidth * 2 - 1 );
-        // console.log( (window.innerWidth * 0.5 + this._width * 0.5) / window.innerWidth * 2 - 1 );
-        // console.log( (window.innerHeight * 0.5 - this._height * 0.5) / window.innerHeight * 2 - 1 );
-        // console.log( (window.innerHeight * 0.5 + this._height * 0.5) / window.innerHeight * 2 - 1 );
         this.hide();
       }
 
@@ -597,10 +642,10 @@ export default class TimelineView {
     this._lines = [];
     for (let i = 0; i < this._nbLines; i++) {
       const line = {
-        x1: Math.cos(Math.PI * 2 * ( i / this._nbLines ) - Math.PI * 0.5 ) * this._baseLinesRadius + this._width * 0.5,
-        y1: Math.sin(Math.PI * 2 * ( i / this._nbLines ) - Math.PI * 0.5 ) * this._baseLinesRadius + this._width * 0.5,
-        x2: Math.cos(Math.PI * 2 * ( i / this._nbLines ) - Math.PI * 0.5 ) * this._endLinesRadius + this._width * 0.5,
-        y2: Math.sin(Math.PI * 2 * ( i / this._nbLines ) - Math.PI * 0.5 ) * this._endLinesRadius + this._width * 0.5,
+        x1: Math.cos(Math.PI * 2 * (i / this._nbLines) - Math.PI * 0.5) * this._baseLinesRadius + this._width * 0.5,
+        y1: Math.sin(Math.PI * 2 * (i / this._nbLines) - Math.PI * 0.5) * this._baseLinesRadius + this._width * 0.5,
+        x2: Math.cos(Math.PI * 2 * (i / this._nbLines) - Math.PI * 0.5) * this._endLinesRadius + this._width * 0.5,
+        y2: Math.sin(Math.PI * 2 * (i / this._nbLines) - Math.PI * 0.5) * this._endLinesRadius + this._width * 0.5,
         opacity: 0,
         size: 0,
       };
@@ -623,12 +668,12 @@ export default class TimelineView {
     }
 
     this._needsUpdate = this._pointsNeedsUpdate ||
-                        this._hexagonesNeedsUpdate ||
-                        this._linesNeedsUpdate ||
-                        this._timelineNeedsUpdate ||
-                        this._previewTimelineNeedsUpdate ||
-                        this._orientationNeedsUpdate ||
-                        this._updateTimelineNeedsUpdate;
+      this._hexagonesNeedsUpdate ||
+      this._linesNeedsUpdate ||
+      this._timelineNeedsUpdate ||
+      this._previewTimelineNeedsUpdate ||
+      this._orientationNeedsUpdate ||
+      this._updateTimelineNeedsUpdate;
   }
 
   _updatePreviewTimeline() {
@@ -639,13 +684,26 @@ export default class TimelineView {
     const endProgress = Math.PI * 2 * this._previewTimeline.progress - Math.PI * 0.5;
     this._ctx.beginPath();
     this._ctx.arc(x, y, radius, startProgress, endProgress);
-    this._ctx.strokeStyle = `rgba(255, 255, 255, ${0.2})`;
+    this._ctx.strokeStyle = `rgba(0, 0, 0, ${0.2})`;
     this._ctx.lineWidth = 2;
     this._ctx.stroke();
   }
 
   _updateTimeline() {
-    const datas = this._type === 'project' ? projectList.projects : experimentList.experiments;
+    var datas = this._type === 'project' ? projectList.projects : experimentList.experiments;
+    if (this._type === 'project') {
+      datas = projectList.projects;
+    }
+    else if (this._type === 'experiment') {
+      datas = experimentList.experiments;
+    }
+    else if (this._type === 'team') {
+      datas = teamList.team;
+    }
+    else {
+      datas = toysList.toys;
+    }
+
     this._timeline.progress = States.global.progress / datas.length;
     const x = this._timeline.x;
     const y = this._timeline.y;
@@ -654,13 +712,26 @@ export default class TimelineView {
     const endProgress = Math.PI * 2 * this._timeline.progress - Math.PI * 0.5;
     this._ctx.beginPath();
     this._ctx.arc(x, y, radius, startProgress, endProgress);
-    this._ctx.strokeStyle = `rgba(255, 255, 255, ${1 * this._timeline.opacity})`;
+    this._ctx.strokeStyle = `rgba(0, 0, 0, ${1 * this._timeline.opacity})`;
     this._ctx.lineWidth = 2;
     this._ctx.stroke();
   }
 
   _updatePoints() {
-    const datas = this._type === 'project' ? projectList.projects : experimentList.experiments;
+
+    var datas = this._type === 'project' ? projectList.projects : experimentList.experiments;
+    if (this._type === 'project') {
+      datas = projectList.projects;
+    }
+    else if (this._type === 'experiment') {
+      datas = experimentList.experiments;
+    }
+    else if (this._type === 'team') {
+      datas = teamList.team;
+    }
+    else if (this._type === 'toys') {
+      datas = toysList.toys;
+    }
 
     for (let i = 0; i < this._points.length; i++) {
 
@@ -670,16 +741,17 @@ export default class TimelineView {
       const radius = this._points[i].radius;
       this._ctx.beginPath();
       this._ctx.arc(x, y, radius, 0, Math.PI * 2);
-      this._ctx.strokeStyle = 'white';
+      this._ctx.strokeStyle = 'red';
       this._ctx.lineWidth = 2;
       this._ctx.stroke();
 
       // Hexagones ---------------------
 
       const progress = this._timeline.progress % (1 - (1 / this._points.length) * 0.5);
-      if (progress >= i / this._points.length - (1 / this._points.length) * 0.5 && progress <= (1 / this._points.length) * ( i + 1 ) - (1 / this._points.length) * 0.5 ) {
+      if (progress >= i / this._points.length - (1 / this._points.length) * 0.5 && progress <= (1 / this._points.length) * (i + 1) - (1 / this._points.length) * 0.5) {
         this._hexagones[i].sizeTarget = 1;
         if (this.visible()) {
+          this._idx = i;
           this._title.updateTitle(datas[i].title);
           this._id = datas[i].id;
           this._url = datas[i].url;
@@ -693,14 +765,14 @@ export default class TimelineView {
         this._hoverIndex = i;
       }
 
-      this._hexagones[i].size += ( this._hexagones[i].sizeTarget - this._hexagones[i].size ) * 0.2;
+      this._hexagones[i].size += (this._hexagones[i].sizeTarget - this._hexagones[i].size) * 0.2;
 
       createHexagone({
         x,
         y,
         size: 10 * this._hexagones[i].size * this._hexagones[i].globalSize,
-        strokeColor: 'white',
-        rotation: Math.PI * 2 * ( i / datas.length ) + Math.PI * 0.5,
+        strokeColor: 'red',
+        rotation: Math.PI * 2 * (i / datas.length) + Math.PI * 0.5,
         context: this._ctx,
       });
     }
@@ -713,10 +785,10 @@ export default class TimelineView {
         x: this._lines[i].x1,
         y: this._lines[i].y1,
       }, {
-        x: this._timeline.x + this._timeline.radius * Math.cos(Math.PI * 2 * this._timeline.progress - Math.PI * 0.5),
-        y: this._timeline.y + this._timeline.radius * Math.sin(Math.PI * 2 * this._timeline.progress - Math.PI * 0.5),
-      });
-      const scaleFactor = map( Math.max(0, Math.abs(distanceToPoint - this._width) ), 100, this._width, 0, 0.8 );
+          x: this._timeline.x + this._timeline.radius * Math.cos(Math.PI * 2 * this._timeline.progress - Math.PI * 0.5),
+          y: this._timeline.y + this._timeline.radius * Math.sin(Math.PI * 2 * this._timeline.progress - Math.PI * 0.5),
+        });
+      const scaleFactor = map(Math.max(0, Math.abs(distanceToPoint - this._width)), 100, this._width, 0, 0.8);
 
       const x1 = this._lines[i].x1;
       const y1 = this._lines[i].y1;
@@ -727,7 +799,7 @@ export default class TimelineView {
       this._ctx.beginPath();
       this._ctx.moveTo(x1, y1);
       this._ctx.lineTo(x2, y2);
-      this._ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+      this._ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
       this._ctx.stroke();
     }
   }
@@ -741,11 +813,5 @@ export default class TimelineView {
     this._ctx.canvas.style.msTransform = `rotateX(${this._rotateX}deg) rotateY(${this._rotateY}deg) rotateZ(${this._rotateZ}deg)`;
     this._ctx.canvas.style.OTransform = `rotateX(${this._rotateX}deg) rotateY(${this._rotateY}deg) rotateZ(${this._rotateZ}deg)`;
     this._ctx.canvas.style.transform = `rotateX(${this._rotateX}deg) rotateY(${this._rotateY}deg) rotateZ(${this._rotateZ}deg)`;
-
-    // this._el.style.webkitTransform = `translate3d(-50%, -50%, 0) rotateZ(${this._rotateZ}deg)`;
-    // this._el.style.MozTransform = `translate3d(-50%, -50%, 0) rotateZ(${this._rotateZ}deg)`;
-    // this._el.style.msTransform = `translate3d(-50%, -50%, 0) rotateZ(${this._rotateZ}deg)`;
-    // this._el.style.OTransform = `translate3d(-50%, -50%, 0) rotateZ(${this._rotateZ}deg)`;
-    // this._el.style.transform = `translate3d(-50%, -50%, 0) rotateZ(${this._rotateZ}deg)`;
   }
 }

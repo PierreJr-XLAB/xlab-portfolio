@@ -19,3 +19,13 @@
        url('/fonts/roboto-regular.svg#Roboto-Regular') format('svg');
   font-weight: 400;
 }
+
+@font-face {
+  font-family: 'funkterm';
+  src: url('/fonts/Funkturm.eot');
+  src: url('/fonts/Funkturm.eot?#iefix') format('embedded-opentype'),
+       url('/fonts/Funkturm.woff') format('woff'),
+       url('/fonts/Funkturm.ttf') format('truetype'),
+       url('/fonts/Funkturm.svg#Funkturm') format('svg');
+  font-weight: 400;
+}

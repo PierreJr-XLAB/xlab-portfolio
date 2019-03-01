@@ -31,7 +31,7 @@ export default class IconProject {
     this._ctx.canvas.style.display = 'none';
     this._parent.appendChild(this._ctx.canvas);
 
-    this._ctx.strokeStyle = 'white';
+    this._ctx.strokeStyle = 'black';
     this._ctx.lineWidth = '2';
   }
 
