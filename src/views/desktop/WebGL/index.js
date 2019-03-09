@@ -508,7 +508,9 @@ export default class WebGL {
     }
 
     if (this._experiment.focused()) {
-      window.open(experimentList.experiments[Math.floor(States.global.progress)].url, '_blank');
+      // window.open(experimentList.experiments[Math.floor(States.global.progress)].url, '_blank');
+      const id = experimentList.experiments[Math.floor(States.global.progress)].id;
+      States.router.navigateTo(pages.PROJECT, { id });
     }
   }
 

@@ -1,6 +1,9 @@
 import States from 'core/States';
 import * as pages from 'core/pages';
 import projectList from 'config/project-list';
+import experimentList from 'config/experiment-list';
+import teamList from 'config/team-list';
+import toysList from 'config/toys-list';
 import { createDOM } from 'utils/dom';
 import { map, randomFloat } from 'utils/math';
 import { autobind } from 'core-decorators';
@@ -99,7 +102,21 @@ export default class DesktopProjectView {
   }
 
   updateProject() {
-    const project = projectList.getProject(States.router.getLastRouteResolved().params.id);
+
+    var project;
+    console.log (States.router.getLastRouteResolved().params);
+    if (States.router.getLastRouteResolved().params.type === 'proj') {
+      project = projectList.getProject(States.router.getLastRouteResolved().params.id);
+    }
+    else if (States.router.getLastRouteResolved().params.type === 'exp') {
+      project = experimentList.getProject(States.router.getLastRouteResolved().params.id);
+    }
+    else if (States.router.getLastRouteResolved().params.type === 'team') {
+      project = teamList.getProject(States.router.getLastRouteResolved().params.id);
+    }
+    else if (States.router.getLastRouteResolved().params.type === 'toys') {
+      project = toysList.getProject(States.router.getLastRouteResolved().params.id);
+    }
 
     this._ui.loading.style.transform = 'scaleX(0)';
     TweenLite.set(this._ui.loading, { opacity: 1 });

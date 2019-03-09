@@ -632,7 +632,9 @@ export default class TimelineView {
     if (this._type === 'project') {
       States.router.navigateTo(pages.PROJECT, { id: this._id });
     } else {
-      window.open(this._url, '_target');
+      // window.open(this._url, '_target');
+
+      States.router.navigateTo(pages.PROJECT, { id: this._id });
     }
   }
 

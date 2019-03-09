@@ -29,7 +29,7 @@ export default class Router {
       '/team': { as: pages.TEAM, uses: this._onRouteTeam },
       '/toys': { as: pages.TOYS, uses: this._onRouteToys },
       '/about': { as: pages.ABOUT, uses: this._onRouteAbout },
-      '/project/:id': { as: pages.PROJECT, uses: this._onRouteProject },
+      '/project/:type/:id/': { as: pages.PROJECT, uses: this._onRouteProject },
     });
   }
 

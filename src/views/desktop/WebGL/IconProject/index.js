@@ -1,5 +1,7 @@
 import experimentList from 'config/experiment-list';
 import projectList from 'config/project-list';
+import teamList from 'config/team-list';
+import toysList from 'config/toys-list';
 import States from 'core/States';
 import * as pages from 'core/pages';
 import { createCanvas, resizeCanvas } from 'utils/canvas';
@@ -56,8 +58,14 @@ export default class IconProject {
   updateState(page) {
     if (page === pages.HOME) {
       this._type = 'project';
-    } else {
+    } else if (page === pages.EXPERIMENT) {
       this._type = 'experiment';
+    }
+    else if (page === pages.TEAM) {
+      this._type = 'team';
+    }
+    else if (page === pages.TOYS) {
+      this._type = 'toys';
     }
   }
 
@@ -90,9 +98,18 @@ export default class IconProject {
 
           if (this._type === 'project') {
             const id = projectList.projects[Math.floor(States.global.progress)].id;
-            States.router.navigateTo(pages.PROJECT, { id });
-          } else {
-            window.open(experimentList.experiments[Math.floor(States.global.progress)].url, '_blank');
+            States.router.navigateTo(pages.PROJECT, { id: id, type: 'proj' });
+          } else if (this._type === 'experiment') {
+            const id = experimentList.experiments[Math.floor(States.global.progress)].id;
+            States.router.navigateTo(pages.PROJECT, { id: id, type: 'exp' });
+          }
+          else if (this._type === 'team') {
+            const id = teamList.team[Math.floor(States.global.progress)].id;
+            States.router.navigateTo(pages.PROJECT, { id: id, type: 'team' });
+          }
+          else if (this._type === 'toys') {
+            const id = toysList.toys[Math.floor(States.global.progress)].id;
+            States.router.navigateTo(pages.PROJECT, { id: id, type: 'toys' });
           }
         },
       },

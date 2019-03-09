@@ -503,7 +503,7 @@ export default class DesktopListView {
   _onProjectItemClick(event) {
     for (let i = 0; i < projectList.projects.length; i++) {
       if (projectList.projects[i].id === event.target.getAttribute('data-id')) {
-        States.router.navigateTo(pages.PROJECT, { id: projectList.projects[i].id });
+        States.router.navigateTo(pages.PROJECT, { id: projectList.projects[i].id, type: 'proj' });
       }
     }
   }
@@ -512,7 +512,8 @@ export default class DesktopListView {
   _onExperimentItemClick(event) {
     for (let i = 0; i < experimentList.experiments.length; i++) {
       if (experimentList.experiments[i].id === event.target.getAttribute('data-id')) {
-        window.open(experimentList.experiments[i].url, '_blank');
+        // window.open(experimentList.experiments[i].url, '_blank');
+        States.router.navigateTo(pages.PROJECT, { id: experimentList.experiments[i].id, type: 'exp' });
       }
     }
   }
@@ -521,7 +522,7 @@ export default class DesktopListView {
   _onTeamItemClick(event) {
     for (let i = 0; i < teamList.team.length; i++) {
       if (teamList.team[i].id === event.target.getAttribute('data-id')) {
-        window.open(teamList.team[i].url, '_blank');
+        States.router.navigateTo(pages.PROJECT, { id: teamList.team[i].id, type: 'team' });
       }
     }
   }
@@ -560,7 +561,8 @@ export default class DesktopListView {
     } else if (this._type === pages.EXPERIMENT) {
       for (let i = 0; i < experimentList.experiments.length; i++) {
         if (i === this._pointIndex) {
-          window.open(experimentList.experiments[i].url, '_blank');
+          // window.open(experimentList.experiments[i].url, '_blank');
+          States.router.navigateTo(pages.PROJECT, { id: experimentList.experiments[i].id });
         }
       }
     }
